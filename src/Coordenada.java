@@ -14,4 +14,17 @@ public class Coordenada {
     public int getY() {
         return y;
     }
+
+    @Override
+    public String toString() {
+        return "[" + this.x + ", " + this.y + "]";
+    }
+
+    public void imprimir() {
+        System.out.println(this.toString());
+    }
+
+    public boolean igual(Coordenada coordenada) {
+        return this.x == coordenada.getX() && this.y == coordenada.getY();
+    }
 }

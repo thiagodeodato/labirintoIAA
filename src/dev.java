@@ -10,6 +10,9 @@ public class dev {
     public static char[][] mapa;
     public static Coordenada origem;
     public static Coordenada destino;
+    public static Coordenada atual;
+
+    public static final char LIVRE = '.';
 
     public static void imprimirMapa() {
         int x = 0;
@@ -18,7 +21,7 @@ public class dev {
         while (x < linhas) {
             y = 0;
             while (y < colunas) {
-                System.out.print(mapa[x][y] + " ");
+                System.out.print(mapa[y][x] + " ");
                 y++;
             }
             System.out.println();
@@ -35,7 +38,7 @@ public class dev {
         int linha = Integer.parseInt(coordenadas.split(" ")[0].trim());
         int coluna = Integer.parseInt(coordenadas.split(" ")[1].trim());
 
-        mapa = new char[linha][coluna];
+        mapa = new char[coluna][linha];
 
         int itens = Integer.parseInt(comandos[linha + 1].trim());
 
@@ -47,7 +50,7 @@ public class dev {
             String caminho = comandos[i++];
             y = 0;
             while (y < coluna) {
-                mapa[x][y] = caminho.trim().charAt(y);
+                mapa[y][x] = caminho.trim().charAt(y);
                 y++;
             }
             x++;
@@ -70,10 +73,13 @@ public class dev {
 
         linhas = linha;
         colunas = coluna;
-        numeroItens = itens; 
+        numeroItens = itens;
 
-        origem = new Coordenada(origemX, origemY);
-        destino = new Coordenada(destinoX, destinoY); 
+        origem = new Coordenada(origemY, origemX);
+        destino = new Coordenada(destinoY, destinoX);
+        atual = origem;
+
+        mapa[atual.getY()][atual.getX()] = 'O';
     }
 
     public static String lerArquivo(String arquivoEntrada) {
@@ -87,16 +93,125 @@ public class dev {
         }
         return entrada;
     }
+
+    public static boolean estaLivre(Coordenada destino) {
+        return mapa[destino.getX()][destino.getY()] == '.';
+    }
+
+    public static boolean possivelAndar(Coordenada destino) {
+        // System.out.println("Colunas: " + colunas);
+        // System.out.println("Linhas: " + linhas);
+        boolean dentroDoMapa = destino.getY() < colunas && destino.getX() < linhas
+                && destino.getX() >= 0 && destino.getY() >= 0;
+        // System.out.println("X: " + destino.getX() + ", Y: " + destino.getY());
+        // System.out.print("DENTRO: ");
+        // System.out.println(dentroDoMapa);
+        boolean livre = false;
+        if (dentroDoMapa)
+            livre = estaLivre(destino);
+        // System.out.print("LIVRE: ");
+        // System.out.println(livre);
+        return livre;
+    }
+
+    public static void imprimirPosicaoMapa(Coordenada posicao) {
+        int x = 0;
+        int y = 0;
+        while (x < linhas) {
+            y = 0;
+            while (y < colunas) {
+                if (posicao.igual(new Coordenada(y, x))) {
+                    System.out.print('+');  
+                } else {
+                    System.out.print('.');
+                }
+                y++;
+            }
+            System.out.println();
+            x++;
+        }
+
+    }
+
+    public static Coordenada andar(Coordenada destino) {
+        mapa[destino.getX()][destino.getY()] = '*';
+        return destino;
+    }
+
+    public static Coordenada direita() {
+        return new Coordenada(atual.getX() + 1, atual.getY());
+    }
+
+    public static Coordenada esquerda() {
+        return new Coordenada(atual.getX() - 1, atual.getY());
+    }
+
+    public static Coordenada cima() {
+        Coordenada cima = new Coordenada(atual.getX(), atual.getY() + 1);
+        return cima;
+    }
+
+    public static Coordenada baixo() {
+        return new Coordenada(atual.getX(), atual.getY() - 1);
+    }
+
+    public static void caminho(Coordenada origem, Coordenada destino) {
+        Coordenada cima = cima();
+        Coordenada direita = direita();
+        Coordenada esquerda = esquerda();
+        Coordenada baixo = baixo();
+        System.out.println(possivelAndar(cima));
+        while (possivelAndar(cima)) {
+            atual = andar(cima);
+            cima.imprimir();
+            cima = cima();
+        }
+
+        atual.imprimir();
+        direita = direita();
+        while(possivelAndar(direita)) {
+            atual = andar(direita);
+            direita = direita();
+        }
+
+        atual.imprimir();
+        baixo = baixo();
+        while(possivelAndar(baixo)) {
+            atual = andar(baixo);
+            baixo = baixo();
+        }
+
+        atual.imprimir();
+        esquerda = esquerda();
+        while(possivelAndar(esquerda)) {
+            atual = andar(esquerda);
+            esquerda = esquerda();
+        }
+    }
+
+    public static boolean chegou() {
+        return atual.igual(destino);
+    }
+
     public static void main(String[] args) {
         String arquivoEntrada = args[0];
         String entrada = lerArquivo(arquivoEntrada);
         inicializarVariaveis(entrada);
 
-        System.out.println(linhas);
-        System.out.println(colunas);
+        imprimirMapa();
+        System.out.println("----------");
 
-        System.out.println(origem.getX() + ", " + origem.getY());
-        System.out.println(destino.getX() + ", " + destino.getY());
+        origem.imprimir();
+        System.out.println("----------");
+
+        caminho(origem, destino);
+        System.out.println("----------");
+
+        atual.imprimir();
+        System.out.println("----------");
+
+        destino.imprimir();
+        System.out.println("----------");
 
         imprimirMapa();
     }
