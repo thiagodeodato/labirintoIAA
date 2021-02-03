@@ -11,6 +11,7 @@ public class dev {
     public static Coordenada origem;
     public static Coordenada destino;
     public static Coordenada atual;
+    public static ArrayList<Coordenada> historico = new ArrayList<Coordenada>();
 
     public static final char LIVRE = '.';
 
@@ -21,6 +22,8 @@ public class dev {
         while (x < linhas) {
             y = 0;
             while (y < colunas) {
+                // if (atual.getX() == x && atual.getY() == y) System.out.print("A ");
+                // else 
                 System.out.print(mapa[y][x] + " ");
                 y++;
             }
@@ -29,6 +32,17 @@ public class dev {
         }
     }
 
+    public static void imprimirHistorico() {
+        for (int i = 0; i < historico.size(); i++) {
+            Coordenada x = historico.get(i);
+            if (i == 0) System.out.print("Inicial: ");
+            else if (i == historico.size() - 1) System.out.print("Final: ");
+            x.imprimir();
+        }
+        if (destino.igual(historico.get(historico.size() - 1))) {
+            System.out.println("CHEGOU");
+        }
+    }
     public static void inicializarVariaveis(String entrada) {
         String[] comandos = entrada.split("\n");
         int i = 1;
@@ -78,6 +92,7 @@ public class dev {
         origem = new Coordenada(origemY, origemX);
         destino = new Coordenada(destinoY, destinoX);
         atual = origem;
+        historico.add(atual);
 
         mapa[atual.getY()][atual.getX()] = 'O';
     }
@@ -95,22 +110,29 @@ public class dev {
     }
 
     public static boolean estaLivre(Coordenada destino) {
-        return mapa[destino.getX()][destino.getY()] == '.';
+        return mapa[destino.getY()][destino.getX()] == '.';
     }
 
-    public static boolean possivelAndar(Coordenada destino) {
+    public static boolean possivelAndar(Coordenada destinoCaminho) {
         // System.out.println("Colunas: " + colunas);
         // System.out.println("Linhas: " + linhas);
-        boolean dentroDoMapa = destino.getY() < colunas && destino.getX() < linhas
-                && destino.getX() >= 0 && destino.getY() >= 0;
-        // System.out.println("X: " + destino.getX() + ", Y: " + destino.getY());
+        boolean dentroDoMapa = destinoCaminho.getY() < colunas && destinoCaminho.getX() < linhas
+                && destinoCaminho.getX() >= 0 && destinoCaminho.getY() >= 0;
+        // destinoCaminho.imprimir();
         // System.out.print("DENTRO: ");
         // System.out.println(dentroDoMapa);
         boolean livre = false;
         if (dentroDoMapa)
-            livre = estaLivre(destino);
+            livre = estaLivre(destinoCaminho);
+
+        // boolean chegou = false;    
+
+        // if (livre)
+        //     chegou = !destino.igual(destinoCaminho);
+
         // System.out.print("LIVRE: ");
         // System.out.println(livre);
+        if (atual.igual(destino)) return false;
         return livre;
     }
 
@@ -130,62 +152,86 @@ public class dev {
             System.out.println();
             x++;
         }
-
     }
 
-    public static Coordenada andar(Coordenada destino) {
-        mapa[destino.getX()][destino.getY()] = '*';
-        return destino;
+    public static Coordenada andar(Coordenada destinoCaminho) {
+        mapa[destinoCaminho.getY()][destinoCaminho.getX()] = '*';
+        historico.add(destinoCaminho);
+        return destinoCaminho;
     }
 
     public static Coordenada direita() {
-        return new Coordenada(atual.getX() + 1, atual.getY());
+        return new Coordenada(atual.getX(), atual.getY() + 1);
     }
 
     public static Coordenada esquerda() {
-        return new Coordenada(atual.getX() - 1, atual.getY());
-    }
-
-    public static Coordenada cima() {
-        Coordenada cima = new Coordenada(atual.getX(), atual.getY() + 1);
-        return cima;
-    }
-
-    public static Coordenada baixo() {
         return new Coordenada(atual.getX(), atual.getY() - 1);
     }
 
+    public static Coordenada cima() {
+        return new Coordenada(atual.getX() + 1, atual.getY());
+    }
+
+    public static Coordenada baixo() {
+        return new Coordenada(atual.getX() - 1, atual.getY());
+    }
+
+    public static void caminhoAleatorio() {
+        while (possivelAndar(cima())) {
+            atual = andar(cima());
+        }
+
+        while (possivelAndar(direita())) {
+            atual = andar(direita());
+        }
+
+        while (possivelAndar(baixo())) {
+            atual = andar(baixo());
+        }
+
+        while(possivelAndar(esquerda())) {
+            atual = andar(esquerda());
+        }
+        
+        if (possivelAndar(cima()) || possivelAndar(direita()) || possivelAndar(esquerda()) || possivelAndar(baixo())) {
+            caminhoAleatorio();
+        } else {
+            return;
+        }
+    }
+
     public static void caminho(Coordenada origem, Coordenada destino) {
-        Coordenada cima = cima();
-        Coordenada direita = direita();
-        Coordenada esquerda = esquerda();
-        Coordenada baixo = baixo();
-        System.out.println(possivelAndar(cima));
-        while (possivelAndar(cima)) {
-            atual = andar(cima);
-            cima.imprimir();
-            cima = cima();
+
+        while (possivelAndar(cima())) {
+            atual = andar(cima());
         }
 
-        atual.imprimir();
-        direita = direita();
-        while(possivelAndar(direita)) {
-            atual = andar(direita);
-            direita = direita();
+        while (possivelAndar(direita())) {
+            atual = andar(direita());
         }
 
-        atual.imprimir();
-        baixo = baixo();
-        while(possivelAndar(baixo)) {
-            atual = andar(baixo);
-            baixo = baixo();
+        while (possivelAndar(baixo())) {
+            atual = andar(baixo());
         }
 
-        atual.imprimir();
-        esquerda = esquerda();
-        while(possivelAndar(esquerda)) {
-            atual = andar(esquerda);
-            esquerda = esquerda();
+        while(possivelAndar(esquerda())) {
+            atual = andar(esquerda());
+        }
+        
+        while (possivelAndar(cima())) {
+            atual = andar(cima());
+        }
+
+        if (possivelAndar(direita())) {
+            atual = andar(direita());
+        }
+
+        while (possivelAndar(baixo())) {
+            atual = andar(baixo());
+        }
+
+        if (possivelAndar(direita())) {
+            atual = andar(direita());
         }
     }
 
@@ -199,20 +245,13 @@ public class dev {
         inicializarVariaveis(entrada);
 
         imprimirMapa();
-        System.out.println("----------");
 
-        origem.imprimir();
-        System.out.println("----------");
-
-        caminho(origem, destino);
-        System.out.println("----------");
-
-        atual.imprimir();
-        System.out.println("----------");
-
-        destino.imprimir();
+        caminhoAleatorio();
         System.out.println("----------");
 
         imprimirMapa();
+        System.out.println("----------");
+
+        imprimirHistorico();
     }
 }
