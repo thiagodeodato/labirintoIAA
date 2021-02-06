@@ -2,7 +2,7 @@ import java.io.*;
 
 public class EP2 {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     public static int [] findPath(Map map, int criteria){
 

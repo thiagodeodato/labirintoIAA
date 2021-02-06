@@ -164,7 +164,7 @@ class Map {
         }
 
         visited[lin][col] = 1;
-        printVisited();
+        //printVisited();
 
         if (lin - 1 >= 0 && free(lin - 1, col) && visited[lin - 1][col] == 0) {            // cima
             dist++;
@@ -185,8 +185,8 @@ class Map {
         }
         visited[lin][col] = 0;
         dist --;
-        printVisited();
-        System.out.println("---------------------------------------------------------------");
+        //printVisited();
+        //System.out.println("---------------------------------------------------------------");
     }
 
     // classe auxiliar para visualizar campos da matriz visited
