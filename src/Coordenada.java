@@ -29,6 +29,10 @@ public class Coordenada {
         System.out.print(this.toString() + " ");
     }
 
+    public void imprimirSaida() {
+        System.out.println(this.x + " " + this.y);
+    }
+
     public boolean igual(Coordenada coordenada) {
         return this.x == coordenada.getX() && this.y == coordenada.getY();
     }

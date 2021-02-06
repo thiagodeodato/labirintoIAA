@@ -8,13 +8,16 @@ import java.util.Queue;
 public class dev {
 
     public static int linhas, colunas, numeroItens;
-    public static ArrayList<Item> items = new ArrayList<Item>();
+    public static ArrayList<ItemMapa> items = new ArrayList<ItemMapa>();
     public static char[][] mapa;
     public static Coordenada[][] mapaCaminho;
     public static Coordenada origem;
     public static Coordenada destino;
     public static Coordenada atual;
     public static ArrayList<Coordenada> historico = new ArrayList<Coordenada>();
+
+    public static double tempo = 0;
+    public static int peso = 0;
 
     public static final char LIVRE = '.';
 
@@ -35,29 +38,83 @@ public class dev {
         }
     }
 
-    public static int interpretaMapaCaminho(Coordenada[][] mapaCaminho) {
+    public static double descobrirTempo(Coordenada[] caminho) {
+        int peso = 0;
+        double tempoTotal = 0;
+        for (int i = 0; i < caminho.length; i++) {
+            ItemMapa item = temItem(caminho[i]);
+            if (item != null) {
+                peso += item.peso;
+            }
+            tempoTotal += tempoPasso(peso);
+        }
+        return tempoTotal;
+    }
+
+    public static ItemMapa temItem(Coordenada coordenada) {
+        for (int i = 0; i < items.size(); i++) {
+            ItemMapa item = items.get(i);
+            if (item.coordenada.igual(coordenada)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public static double tempoPasso(int peso) {
+        double base = 1 + ((double) peso / 10);
+        return Math.pow(base, 2);
+    }
+
+    public static Coordenada[] interpretaMapaCaminho(Coordenada[][] mapaCaminho) {
         Coordenada d = destino;
+        int pesoTotal = 0;
+        int valorTotal = 0;
         int contador = 0;
+        double tempo = 0;
         while (!d.igual(origem)) {
             contador++;
             d = mapaCaminho[d.getY()][d.getX()];
         }
-        Coordenada[] caminho = new Coordenada[contador];
-        caminho[0] = destino;
+        Coordenada[] caminhoInvertido = new Coordenada[contador];
+        Coordenada[] caminhoCorreto = new Coordenada[contador];
+        caminhoInvertido[0] = destino;
+
+        ArrayList<ItemMapa> itensAchados = new ArrayList<ItemMapa>();
 
         d = destino;
         int i = 0;
         while (!d.igual(origem)) {
             d = mapaCaminho[d.getY()][d.getX()];
-            caminho[i++] = d;
+            ItemMapa item = temItem(d);
+            if (item != null) {
+                itensAchados.add(item);
+            }
+            caminhoInvertido[i] = d;
+            caminhoCorreto[caminhoCorreto.length - 1 - i] = d;
+            i++;
         }
-        i = caminho.length - 1;
-        while (i >= 0) {
-            caminho[i--].imprimirNaFila();
+
+        tempo = descobrirTempo(caminhoCorreto);
+        System.out.println(caminhoInvertido.length + 1 + " " + tempo);
+
+        for (int x = 0; x < itensAchados.size(); x++) {
+            pesoTotal += itensAchados.get(x).peso;
+            valorTotal += itensAchados.get(x).valor;
         }
-        destino.imprimirNaFila();
-        System.out.println();
-        return contador + 1;
+
+        i = 0;
+        while (i < caminhoCorreto.length) {
+            caminhoCorreto[i++].imprimirSaida();
+        }
+        destino.imprimirSaida();
+
+        System.out.println(itensAchados.size() + " " + valorTotal + " " + pesoTotal);
+
+        for (int x = 0; x < itensAchados.size(); x++) {
+            itensAchados.get(x).coordenada.imprimirSaida();
+        }
+        return caminhoInvertido;
     }
 
     public static void imprimirMapaCaminho(Coordenada[][] mapaCaminho) {
@@ -122,7 +179,8 @@ public class dev {
         i = linha + 2;
         int contagem = i + itens;
         while (i < contagem) {
-            items.add(new Item(comandos[i++].trim()));
+            ItemMapa item = new ItemMapa(comandos[i++].trim());
+            items.add(item);
         }
 
         String coordenadasOrigem = comandos[i];
@@ -316,18 +374,9 @@ public class dev {
         String entrada = lerArquivo(arquivoEntrada);
         inicializarVariaveis(entrada);
 
-        System.out.print("ORIGEM: ");
-        origem.imprimir();
-
-        System.out.print("DESTINO: ");
-        destino.imprimir();
-
         Coordenada[][] mapa = caminhoMaisCurto(origem, destino);
         if (mapa != null) {
-            System.out.print("CAMINHO: ");
-            int nroPassos = interpretaMapaCaminho(mapa);
-
-            System.out.println("NUMERO DE PASSOS: " + Integer.toString(nroPassos));
+            Coordenada caminho[] = interpretaMapaCaminho(mapa);
         } else {
             System.out.println("NAO HA CAMINHO DISPONIVEL");
         }
