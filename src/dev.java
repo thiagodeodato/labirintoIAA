@@ -2,12 +2,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class dev {
 
     public static int linhas, colunas, numeroItens;
     public static ArrayList<Item> items = new ArrayList<Item>();
     public static char[][] mapa;
+    public static Coordenada[][] mapaCaminho;
     public static Coordenada origem;
     public static Coordenada destino;
     public static Coordenada atual;
@@ -23,8 +26,50 @@ public class dev {
             y = 0;
             while (y < colunas) {
                 // if (atual.getX() == x && atual.getY() == y) System.out.print("A ");
-                // else 
+                // else
                 System.out.print(mapa[y][x] + " ");
+                y++;
+            }
+            System.out.println();
+            x++;
+        }
+    }
+
+    public static int interpretaMapaCaminho(Coordenada[][] mapaCaminho) {
+        Coordenada d = destino;
+        int contador = 0;
+        while (!d.igual(origem)) {
+            contador++;
+            d = mapaCaminho[d.getY()][d.getX()];
+        }
+        Coordenada[] caminho = new Coordenada[contador];
+        caminho[0] = destino;
+
+        d = destino;
+        int i = 0;
+        while (!d.igual(origem)) {
+            d = mapaCaminho[d.getY()][d.getX()];
+            caminho[i++] = d;
+        }
+        i = caminho.length - 1;
+        while (i >= 0) {
+            caminho[i--].imprimirNaFila();
+        }
+        destino.imprimirNaFila();
+        System.out.println();
+        return contador + 1;
+    }
+
+    public static void imprimirMapaCaminho(Coordenada[][] mapaCaminho) {
+        int x = 0;
+        int y = 0;
+
+        while (x < linhas) {
+            y = 0;
+            while (y < colunas) {
+                // if (atual.getX() == x && atual.getY() == y) System.out.print("A ");
+                // else
+                System.out.print(mapaCaminho[y][x].toString() + " ");
                 y++;
             }
             System.out.println();
@@ -35,14 +80,16 @@ public class dev {
     public static void imprimirHistorico() {
         for (int i = 0; i < historico.size(); i++) {
             Coordenada x = historico.get(i);
-            if (i == 0) System.out.print("Inicial: ");
-            else if (i == historico.size() - 1) System.out.print("Final: ");
+            if (i == 0)
+                System.out.print("Inicial: ");
+            else if (i == historico.size() - 1)
+                System.out.print("Final: ");
             x.imprimir();
         }
-        if (destino.igual(historico.get(historico.size() - 1))) {
-            System.out.println("CHEGOU");
-        }
+        System.out.print("Número de passos dados: ");
+        System.out.println(historico.size());
     }
+
     public static void inicializarVariaveis(String entrada) {
         String[] comandos = entrada.split("\n");
         int i = 1;
@@ -53,6 +100,7 @@ public class dev {
         int coluna = Integer.parseInt(coordenadas.split(" ")[1].trim());
 
         mapa = new char[coluna][linha];
+        mapaCaminho = new Coordenada[coluna][linha];
 
         int itens = Integer.parseInt(comandos[linha + 1].trim());
 
@@ -65,6 +113,7 @@ public class dev {
             y = 0;
             while (y < coluna) {
                 mapa[y][x] = caminho.trim().charAt(y);
+                mapaCaminho[y][x] = new Coordenada(-1, -1);
                 y++;
             }
             x++;
@@ -89,12 +138,24 @@ public class dev {
         colunas = coluna;
         numeroItens = itens;
 
-        origem = new Coordenada(origemY, origemX);
-        destino = new Coordenada(destinoY, destinoX);
+        origem = new Coordenada(origemX, origemY);
+        destino = new Coordenada(destinoX, destinoY);
         atual = origem;
-        historico.add(atual);
+    }
 
-        mapa[atual.getY()][atual.getX()] = 'O';
+    public static Boolean[][] inicializarMapaVisitados() {
+        Boolean[][] mapa = new Boolean[colunas][linhas];
+        int x = 0;
+        int y = 0;
+        while (x < linhas) {
+            y = 0;
+            while (y < colunas) {
+                mapa[y][x] = false;
+                y++;
+            }
+            x++;
+        }
+        return mapa;
     }
 
     public static String lerArquivo(String arquivoEntrada) {
@@ -114,26 +175,13 @@ public class dev {
     }
 
     public static boolean possivelAndar(Coordenada destinoCaminho) {
-        // System.out.println("Colunas: " + colunas);
-        // System.out.println("Linhas: " + linhas);
         boolean dentroDoMapa = destinoCaminho.getY() < colunas && destinoCaminho.getX() < linhas
                 && destinoCaminho.getX() >= 0 && destinoCaminho.getY() >= 0;
-        // destinoCaminho.imprimir();
-        // System.out.print("DENTRO: ");
-        // System.out.println(dentroDoMapa);
+
         boolean livre = false;
         if (dentroDoMapa)
             livre = estaLivre(destinoCaminho);
-
-        // boolean chegou = false;    
-
-        // if (livre)
-        //     chegou = !destino.igual(destinoCaminho);
-
-        // System.out.print("LIVRE: ");
-        // System.out.println(livre);
-        if (atual.igual(destino)) return false;
-        return livre;
+        return livre && !destinoCaminho.visitada;
     }
 
     public static void imprimirPosicaoMapa(Coordenada posicao) {
@@ -143,7 +191,7 @@ public class dev {
             y = 0;
             while (y < colunas) {
                 if (posicao.igual(new Coordenada(y, x))) {
-                    System.out.print('+');  
+                    System.out.print('+');
                 } else {
                     System.out.print('.');
                 }
@@ -154,85 +202,109 @@ public class dev {
         }
     }
 
-    public static Coordenada andar(Coordenada destinoCaminho) {
-        mapa[destinoCaminho.getY()][destinoCaminho.getX()] = '*';
-        historico.add(destinoCaminho);
-        return destinoCaminho;
+    public static char conteudoPosicao(Coordenada posicao) {
+        return mapa[posicao.getY()][posicao.getX()];
     }
 
-    public static Coordenada direita() {
+    public static void andar(Coordenada destino) {
+        mapa[destino.getY()][destino.getX()] = '*';
+    }
+
+    public static Coordenada direita(Coordenada atual) {
         return new Coordenada(atual.getX(), atual.getY() + 1);
     }
 
-    public static Coordenada esquerda() {
+    public static Coordenada esquerda(Coordenada atual) {
         return new Coordenada(atual.getX(), atual.getY() - 1);
     }
 
-    public static Coordenada cima() {
+    public static Coordenada cima(Coordenada atual) {
         return new Coordenada(atual.getX() + 1, atual.getY());
     }
 
-    public static Coordenada baixo() {
+    public static Coordenada baixo(Coordenada atual) {
         return new Coordenada(atual.getX() - 1, atual.getY());
     }
 
-    public static void caminhoAleatorio() {
-        while (possivelAndar(cima())) {
-            atual = andar(cima());
+    public static void imprimirFila(Queue<Coordenada> fila) {
+        Queue<Coordenada> novaFila = new LinkedList<Coordenada>(fila);
+        while (!novaFila.isEmpty()) {
+            novaFila.poll().imprimirNaFila();
+            ;
         }
-
-        while (possivelAndar(direita())) {
-            atual = andar(direita());
-        }
-
-        while (possivelAndar(baixo())) {
-            atual = andar(baixo());
-        }
-
-        while(possivelAndar(esquerda())) {
-            atual = andar(esquerda());
-        }
-        
-        if (possivelAndar(cima()) || possivelAndar(direita()) || possivelAndar(esquerda()) || possivelAndar(baixo())) {
-            caminhoAleatorio();
-        } else {
-            return;
-        }
+        System.out.println();
     }
 
-    public static void caminho(Coordenada origem, Coordenada destino) {
+    public static Coordenada[][] inicializarMapaCaminho() {
+        Coordenada[][] mapa = new Coordenada[colunas][linhas];
+        int x = 0;
+        int y = 0;
+        while (x < linhas) {
+            y = 0;
+            while (y < colunas) {
+                mapa[y][x] = new Coordenada(-1, -1);
+                y++;
+            }
+            x++;
+        }
+        return mapa;
+    }
 
-        while (possivelAndar(cima())) {
-            atual = andar(cima());
-        }
+    public static Coordenada[][] caminhoMaisCurto(Coordenada origem, Coordenada destino) {
+        Queue<Coordenada> fila = new LinkedList<Coordenada>();
+        Coordenada current;
+        Coordenada direita, esquerda, baixo, cima;
 
-        while (possivelAndar(direita())) {
-            atual = andar(direita());
-        }
+        Boolean[][] visitados = inicializarMapaVisitados();
+        Coordenada[][] mapaCaminho = inicializarMapaCaminho();
 
-        while (possivelAndar(baixo())) {
-            atual = andar(baixo());
-        }
+        fila.add(origem);
+        visitados[origem.getY()][origem.getX()] = true;
+        mapaCaminho[origem.getY()][origem.getX()] = new Coordenada(origem.getX(), origem.getY());
 
-        while(possivelAndar(esquerda())) {
-            atual = andar(esquerda());
-        }
-        
-        while (possivelAndar(cima())) {
-            atual = andar(cima());
-        }
+        while (!fila.isEmpty()) {
+            current = fila.poll();
+            mapa[current.getY()][current.getX()] = '*';
 
-        if (possivelAndar(direita())) {
-            atual = andar(direita());
-        }
+            direita = direita(current);
+            esquerda = esquerda(current);
+            baixo = baixo(current);
+            cima = cima(current);
 
-        while (possivelAndar(baixo())) {
-            atual = andar(baixo());
-        }
+            Coordenada[] vizinhos = { direita, esquerda, baixo, cima };
 
-        if (possivelAndar(direita())) {
-            atual = andar(direita());
+            if (current.igual(destino))
+                return mapaCaminho;
+
+            for (int i = 0; i < vizinhos.length; i++) {
+                Coordenada vizinho = vizinhos[i];
+                if (possivelAndar(vizinho) && !visitados[vizinho.getY()][vizinho.getX()]) {
+                    fila.add(vizinho);
+                    visitados[vizinho.getY()][vizinho.getX()] = true;
+                    mapaCaminho[vizinho.getY()][vizinho.getX()] = new Coordenada(current.getX(), current.getY());
+                }
+            }
+            // if (destino.igual(current)) {
+            // mapa[current.getY()][current.getX()] = new Coordenada(anterior.getX(),
+            // anterior.getY());
+            // andar(anterior, current);
+            // return mapa;
+            // } else {
+            // mapa[current.getY()][current.getX()] = new Coordenada(anterior.getX(),
+            // anterior.getY());
+            // andar(anterior, current);
+            // if (possivelAndar(direita(current)))
+            // fila.add(direita(current));
+            // if (possivelAndar(esquerda(current)))
+            // fila.add(esquerda(current));
+            // if (possivelAndar(cima(current)))
+            // fila.add(cima(current));
+            // if (possivelAndar(baixo(current)))
+            // fila.add(baixo(current));
+            // }
+            // anterior = new Coordenada(current.getX(), current.getY());
         }
+        return null;
     }
 
     public static boolean chegou() {
@@ -244,14 +316,20 @@ public class dev {
         String entrada = lerArquivo(arquivoEntrada);
         inicializarVariaveis(entrada);
 
-        imprimirMapa();
+        System.out.print("ORIGEM: ");
+        origem.imprimir();
 
-        caminhoAleatorio();
-        System.out.println("----------");
+        System.out.print("DESTINO: ");
+        destino.imprimir();
 
-        imprimirMapa();
-        System.out.println("----------");
+        Coordenada[][] mapa = caminhoMaisCurto(origem, destino);
+        if (mapa != null) {
+            System.out.print("CAMINHO: ");
+            int nroPassos = interpretaMapaCaminho(mapa);
 
-        imprimirHistorico();
+            System.out.println("NUMERO DE PASSOS: " + Integer.toString(nroPassos));
+        } else {
+            System.out.println("NAO HA CAMINHO DISPONIVEL");
+        }
     }
 }

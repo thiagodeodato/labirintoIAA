@@ -1,6 +1,7 @@
 public class Coordenada {
     int x;
     int y;
+    boolean visitada = false;
 
     Coordenada(int x, int y) {
         this.x = x;
@@ -22,6 +23,10 @@ public class Coordenada {
 
     public void imprimir() {
         System.out.println(this.toString());
+    }
+
+    public void imprimirNaFila() {
+        System.out.print(this.toString() + " ");
     }
 
     public boolean igual(Coordenada coordenada) {
