@@ -9,7 +9,12 @@ class Map {
     private Item[] items;
     private int nLin, nCol, nItems, startLin, startCol, endLin, endCol, size, dist, maxDist;
     public int[][] visited;
+    public int[][] visitedLin;
+    public int[][] visitedCol;
     public int[][] maxVisited;
+    public int[][] maxVisitedLin;
+    public int[][] maxVisitedCol;
+    public String aux;
 
     public Map(String fileName) {
 
@@ -26,6 +31,10 @@ class Map {
             map = new char[nLin][nCol];
             visited = new int[nLin][nCol];
             maxVisited = new int[nLin][nCol];
+            visitedLin = new int[nLin][nCol];
+            visitedCol = new int[nLin][nCol];
+            maxVisitedLin = new int[nLin][nCol];
+            maxVisitedCol = new int[nLin][nCol];
             size = 0;
             dist = 0;
 
@@ -157,6 +166,8 @@ class Map {
                 for(int i = 0; i<nLin; i++){
                     for(int j = 0; j<nCol; j++){
                         maxVisited[i][j] = visited[i][j];
+                        maxVisitedLin[i][j] = visitedLin[i][j];
+                        maxVisitedCol[i][j] = visitedCol[i][j];
                     }
                 }
             }
@@ -168,21 +179,30 @@ class Map {
 
         if (lin - 1 >= 0 && free(lin - 1, col) && visited[lin - 1][col] == 0) {            // cima
             dist++;
-
+            visitedLin[lin][col] = (lin - 1);
+            visitedCol[lin][col] = col;
             findLongestPath(lin - 1, col);
         }
         if (col + 1 < nColumns() && free(lin, col + 1) &&  visited[lin][col + 1] == 0) {    // direita
             dist++;
+            visitedLin[lin][col] = lin;
+            visitedCol[lin][col] = col + 1;
             findLongestPath(lin, col + 1);
         }
         if (lin + 1 < nLines() && free(lin + 1, col) && visited[lin + 1][col] == 0) {    // baixo
             dist++;
+            visitedLin[lin][col] = (lin + 1);
+            visitedCol[lin][col] = col;
             findLongestPath(lin + 1, col);
         }
         if (col - 1 >= 0 && free(lin, col - 1) && visited[lin][col - 1] == 0) {        // esquerda
             dist++;
+            visitedLin[lin][col] = lin;
+            visitedCol[lin][col] = col - 1;
             findLongestPath(lin, col - 1);
         }
+        visitedLin[lin][col] = 0;
+        visitedCol[lin][col] = 0;
         visited[lin][col] = 0;
         dist --;
         //printVisited();
