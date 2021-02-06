@@ -6,7 +6,7 @@ public class EP2 {
 
     public static int [] findPath(Map map, int criteria){
 
-        int lin, col; // coordenadas (lin, col) da posição atual
+        int lin, col, linAux, colAux; // coordenadas (lin, col) da posição atual
 
         // path é um vetor de inteiro usado para guardar as coordenadas do caminho conforme vai sendo calculado.
         // path_index é usado para gerenciar a ocupação deste vetor. O vetor é usado da seguinte forma:
@@ -33,49 +33,71 @@ public class EP2 {
         path[path_index + 1] = col;
         path_index += 2;
 
-        if(DEBUG){
+            if (DEBUG) {
 
-            map.print();
-            System.out.println("---------------------------------------------------------------");
-        }
-
-        while(!map.finished(lin, col)){
-
-            if(lin - 1 >= 0 && map.free(lin - 1, col)){			// cima
-
-                //System.out.println("UP");
-                lin = lin - 1;
-            }
-            else if(col + 1 < map.nColumns() && map.free(lin, col + 1)){	// direita
-
-                //System.out.println("RIGHT");
-                col = col + 1;
-            }
-            else if(lin + 1 < map.nLines() && map.free(lin + 1, col)){	// baixo
-
-                //System.out.println("DOWN");
-                lin = lin + 1;
-            }
-            else if(col - 1 >= 0 && map.free(lin, col - 1)){		// esquerda
-
-                //System.out.println("LEFT");
-                col = col - 1;
-            }
-            else{
-                //System.out.println("BREAK!");
-                break; // não existe passo a ser dado a partir da posição atual...
-            }
-
-            map.step(lin, col);
-            path[path_index] = lin;
-            path[path_index + 1] = col;
-            path_index += 2;
-
-            if(DEBUG){
                 map.print();
                 System.out.println("---------------------------------------------------------------");
             }
-        }
+
+            if(criteria == 2) {
+                map.findLongestPath(lin, col);
+                for(int a = 0; a<map.nLines(); a++){
+                    for (int b = 0; b<map.nColumns(); b++){
+                        if(map.maxVisited[a][b] != 0){
+                            map.step(a,b);
+                        }
+                    }
+                }
+                while(lin != -1 && col != -1){
+                    linAux = map.maxVisitedLin[lin][col];
+                    colAux = map.maxVisitedCol[lin][col];
+                    path[path_index] = linAux;
+                    path[path_index + 1] = colAux;
+                    path_index += 2;
+                    if(lin == map.getEndLin() && col == map.getEndCol()){
+                        lin = -1;
+                        col = -1;
+                    } else {
+                        lin = linAux;
+                        col = colAux;
+                    }
+                }
+                map.step(map.getEndLin(),map.getEndCol());
+                //map.print();
+//                while (!map.finished(lin, col)) {
+//
+//                    if (lin - 1 >= 0 && map.free(lin - 1, col)) {            // cima
+//
+//                        //System.out.println("UP");
+//                        lin = lin - 1;
+//                    } else if (col + 1 < map.nColumns() && map.free(lin, col + 1)) {    // direita
+//
+//                        //System.out.println("RIGHT");
+//                        col = col + 1;
+//                    } else if (lin + 1 < map.nLines() && map.free(lin + 1, col)) {    // baixo
+//
+//                        //System.out.println("DOWN");
+//                        lin = lin + 1;
+//                    } else if (col - 1 >= 0 && map.free(lin, col - 1)) {        // esquerda
+//
+//                        //System.out.println("LEFT");
+//                        col = col - 1;
+//                    } else {
+//                        //System.out.println("BREAK!");
+//                        break; // não existe passo a ser dado a partir da posição atual...
+//                    }
+//
+//                    map.step(lin, col);
+//                    path[path_index] = lin;
+//                    path[path_index + 1] = col;
+//                    path_index += 2;
+//
+//                    if (DEBUG) {
+//                        map.print();
+//                        System.out.println("---------------------------------------------------------------");
+//                    }
+//                }
+            }
 
         path[0] = path_index;
         return path;
