@@ -63,40 +63,6 @@ public class EP2 {
                     }
                 }
                 map.step(map.getEndLin(),map.getEndCol());
-                //map.print();
-//                while (!map.finished(lin, col)) {
-//
-//                    if (lin - 1 >= 0 && map.free(lin - 1, col)) {            // cima
-//
-//                        //System.out.println("UP");
-//                        lin = lin - 1;
-//                    } else if (col + 1 < map.nColumns() && map.free(lin, col + 1)) {    // direita
-//
-//                        //System.out.println("RIGHT");
-//                        col = col + 1;
-//                    } else if (lin + 1 < map.nLines() && map.free(lin + 1, col)) {    // baixo
-//
-//                        //System.out.println("DOWN");
-//                        lin = lin + 1;
-//                    } else if (col - 1 >= 0 && map.free(lin, col - 1)) {        // esquerda
-//
-//                        //System.out.println("LEFT");
-//                        col = col - 1;
-//                    } else {
-//                        //System.out.println("BREAK!");
-//                        break; // não existe passo a ser dado a partir da posição atual...
-//                    }
-//
-//                    map.step(lin, col);
-//                    path[path_index] = lin;
-//                    path[path_index + 1] = col;
-//                    path_index += 2;
-//
-//                    if (DEBUG) {
-//                        map.print();
-//                        System.out.println("---------------------------------------------------------------");
-//                    }
-//                }
             }
 
         path[0] = path_index;
