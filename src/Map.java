@@ -146,6 +146,11 @@ class Map {
         return nCol;
     }
 
+    public int getNItems() {
+
+        return nItems;
+    }
+
     public Item getItem(int lin, int col) {
 
         for (int i = 0; i < items.length; i++) {

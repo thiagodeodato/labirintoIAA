@@ -17,7 +17,6 @@ public class EP2 {
         // path[3] = linha da 2.a coordenada que faz parte do caminho
         // path[4] = coluna da 2.a coordenada que faz parte do caminho
         // ... etc
-
         int [] path;
         int path_index;
 
@@ -63,6 +62,7 @@ public class EP2 {
                     }
                 }
                 map.step(map.getEndLin(),map.getEndCol());
+                path_index -=2;
             }
 
         path[0] = path_index;
@@ -76,10 +76,17 @@ public class EP2 {
         int totalItems = 0;
         int totalValue = 0;
         int totalWeight = 0;
+        double pathTime = 0;
+        Item [] items = new Item[map.getNItems()];
+        int nextEmptyIndex = 0;
+        String [] solution = new String[2 * map.getSize()];
+        int indexSolution = 0;
 
         int path_size = path[0];
 
-        System.out.println((path_size - 1)/2 + " " + 0.0);
+        solution[indexSolution] = "" + (path_size - 1)/2 + " ";
+        indexSolution++;
+        //System.out.println((path_size - 1)/2 + " " + 0.0);
 
         for(int i = 1; i < path_size; i += 2){
 
@@ -87,18 +94,34 @@ public class EP2 {
             int col = path[i + 1];
             Item item = map.getItem(lin, col);
 
-            System.out.println(lin + " " + col);
-
+            solution[indexSolution] = "" + lin + " " + col;
+            indexSolution++;
+            // lista dos itens coletados
             if(item != null){
+                items[nextEmptyIndex] = item;
+                nextEmptyIndex++;
+
 
                 totalItems++;
                 totalValue += item.getValue();
                 totalWeight += item.getWeight();
+            }if(i + 2 < path_size){
+                pathTime += dev.tempoPasso(totalWeight);
+            } else{
+                solution[0] += pathTime;
             }
         }
-
-        // Estamos ignorando os itens que são coletados no caminho. Isso precisa ser modificado para a versão final.
-        System.out.println("0 0 0");
+        int printingSolutionIndex = 0;
+        while(printingSolutionIndex < indexSolution){
+            if(solution[printingSolutionIndex] != null){
+                System.out.println(solution[printingSolutionIndex]);
+            }
+            printingSolutionIndex++;
+        }
+        System.out.println(totalItems + " " + totalValue + " " + totalWeight);
+        for(int i = 0; i < nextEmptyIndex; i++){
+            System.out.println(items[i].getLin() + " " + items[i].getCol());
+        }
     }
 
     public static void main(String [] args) throws IOException {
