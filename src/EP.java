@@ -287,15 +287,6 @@ public class EP {
 
         int lin, col, linAux, colAux; // coordenadas (lin, col) da posição atual
 
-        // path é um vetor de inteiro usado para guardar as coordenadas do caminho conforme vai sendo calculado.
-        // path_index é usado para gerenciar a ocupação deste vetor. O vetor é usado da seguinte forma:
-        //
-        // path[0] = quantidade de valores efetivamente armazenados no vetor (não necessáriamente coincide com o tamanho real do vetor)
-        // path[1] = linha da 1.a coordenada que faz parte do caminho
-        // path[2] = coluna da 1.a coordenada que faz parte do caminho
-        // path[3] = linha da 2.a coordenada que faz parte do caminho
-        // path[4] = coluna da 2.a coordenada que faz parte do caminho
-        // ... etc
         int [] path;
         int path_index;
 
@@ -313,30 +304,35 @@ public class EP {
 
         if(criteria == 2) {
             map.findLongestPath(lin, col);
-            for(int a = 0; a<map.nLines(); a++){
-                for (int b = 0; b<map.nColumns(); b++){
-                    if(map.maxVisited[a][b] != 0){
-                        map.step(a,b);
-                    }
-                }
-            }
-            while(lin != -1 && col != -1){
-                linAux = map.maxVisitedLin[lin][col];
-                colAux = map.maxVisitedCol[lin][col];
-                path[path_index] = linAux;
-                path[path_index + 1] = colAux;
-                path_index += 2;
-                if(lin == map.getEndLin() && col == map.getEndCol()){
-                    lin = -1;
-                    col = -1;
-                } else {
-                    lin = linAux;
-                    col = colAux;
-                }
-            }
-            map.step(map.getEndLin(),map.getEndCol());
-            path_index -=2;
         }
+
+        if(criteria == 4){
+            map.findFastestPath(lin, col, 0, 0);
+        }
+
+        for(int a = 0; a<map.nLines(); a++){
+            for (int b = 0; b<map.nColumns(); b++){
+                if(map.maxVisited[a][b] != 0){
+                    map.step(a,b);
+                }
+            }
+        }
+        while(lin != -1 && col != -1){
+            linAux = map.maxVisitedLin[lin][col];
+            colAux = map.maxVisitedCol[lin][col];
+            path[path_index] = linAux;
+            path[path_index + 1] = colAux;
+            path_index += 2;
+            if(lin == map.getEndLin() && col == map.getEndCol()){
+                lin = -1;
+                col = -1;
+            } else {
+                lin = linAux;
+                col = colAux;
+            }
+        }
+        map.step(map.getEndLin(),map.getEndCol());
+        path_index -=2;
 
         path[0] = path_index;
         return path;
@@ -473,14 +469,12 @@ public class EP {
                 }
                 break;
             case "2":
+            case "4":
                 printSolution(map, path);
                 break;
             case "3":
                 // Completar aqui
                 break;
-            case "4":
-                // Completar aqui
-                break;    
         }
 
     }

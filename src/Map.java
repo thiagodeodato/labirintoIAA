@@ -8,6 +8,7 @@ class Map {
     private char[][] map;
     private Item[] items;
     private int nLin, nCol, nItems, startLin, startCol, endLin, endCol, size, dist, maxDist;
+    private double minTime;
     public int[][] visited;
     public int[][] visitedLin;
     public int[][] visitedCol;
@@ -15,6 +16,7 @@ class Map {
     public int[][] maxVisitedLin;
     public int[][] maxVisitedCol;
     public String aux;
+    public Item item;
 
     public Map(String fileName) {
 
@@ -37,6 +39,7 @@ class Map {
             maxVisitedCol = new int[nLin][nCol];
             size = 0;
             dist = 0;
+            minTime = Integer.MAX_VALUE;
 
             for (int i = 0; i < nLin; i++) {
 
@@ -212,6 +215,73 @@ class Map {
         dist --;
         //printVisited();
         //System.out.println("---------------------------------------------------------------");
+    }
+
+    public void findFastestPath(int lin, int col, double time, int weight) {
+        item = null;
+        if (lin == endLin && col == endCol) {
+            if(time < minTime){
+                minTime = time;
+                for(int i = 0; i<nLin; i++){
+                    for(int j = 0; j<nCol; j++){
+                        maxVisited[i][j] = visited[i][j];
+                        maxVisitedLin[i][j] = visitedLin[i][j];
+                        maxVisitedCol[i][j] = visitedCol[i][j];
+                    }
+                }
+            }
+            return;
+        }
+
+        visited[lin][col] = 1;
+        //printVisited();
+
+        if (lin - 1 >= 0 && free(lin - 1, col) && visited[lin - 1][col] == 0) {            // cima
+            item = getItem(lin - 1, col);
+            if (item != null){
+                weight += item.getWeight();
+            }
+            time += EP.tempoPasso(weight);
+            visitedLin[lin][col] = (lin - 1);
+            visitedCol[lin][col] = col;
+            findFastestPath(lin - 1, col, time, weight);
+        }
+        if (col + 1 < nColumns() && free(lin, col + 1) &&  visited[lin][col + 1] == 0) {    // direita
+            item = getItem(lin, col + 1);
+            if (item != null){
+                weight += item.getWeight();
+            }
+            time += EP.tempoPasso(weight);
+            visitedLin[lin][col] = lin;
+            visitedCol[lin][col] = col + 1;
+            findFastestPath(lin, col + 1, time, weight);
+        }
+        if (lin + 1 < nLines() && free(lin + 1, col) && visited[lin + 1][col] == 0) {    // baixo
+            item = getItem(lin + 1, col);
+            if (item != null){
+                weight += item.getWeight();
+            }
+            time += EP.tempoPasso(weight);
+            visitedLin[lin][col] = (lin + 1);
+            visitedCol[lin][col] = col;
+            findFastestPath(lin + 1, col, time, weight);
+        }
+        if (col - 1 >= 0 && free(lin, col - 1) && visited[lin][col - 1] == 0) {        // esquerda
+            item = getItem(lin, col - 1);
+            if (item != null){
+                weight += item.getWeight();
+            }
+            time += EP.tempoPasso(weight);
+            visitedLin[lin][col] = lin;
+            visitedCol[lin][col] = col - 1;
+            findFastestPath(lin, col - 1, time, weight);
+        }
+        visitedLin[lin][col] = 0;
+        visitedCol[lin][col] = 0;
+        visited[lin][col] = 0;
+        //printVisited();
+        //System.out.println("---------------------------------------------------------------");
+
     }
 
     // classe auxiliar para visualizar campos da matriz visited
