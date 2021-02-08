@@ -24,8 +24,6 @@ public class EP {
         while (x < linhas) {
             y = 0;
             while (y < colunas) {
-                // if (atual.getX() == x && atual.getY() == y) System.out.print("A ");
-                // else
                 System.out.print(mapa[y][x] + " ");
                 y++;
             }
@@ -393,6 +391,11 @@ public class EP {
         }
     }
 
+    public static Coordenada[] caminhoMaisValioso(Coordenada origem, Coordenada destino) {
+        LinkedList<Coordenada> lista = new LinkedList<Coordenada>();
+        return new Coordenada[1];
+    }
+    
     // Esse método é responsável por retornar o caminho mais curto entre duas
     // coordenadas (menor número de coordenadas visitadas dentro do mapa)
     public static Coordenada[][] caminhoMaisCurto(Coordenada origem, Coordenada destino) {
@@ -447,12 +450,6 @@ public class EP {
             return;
         }
 
-        Map map = new Map(args[0]);
-
-        int criteria = Integer.parseInt(args[1]);
-        int [] path = findPath(map, criteria);
-
-
         String arquivoEntrada = args[0];
         String criterio = args[1];
 
@@ -464,12 +461,15 @@ public class EP {
                 Coordenada[][] mapa = caminhoMaisCurto(origem, destino);
                 if (mapa != null) {
                     Coordenada caminho[] = interpretaMapaCaminho(mapa);
+                    // imprimirMapaCaminho(mapa);
                 } else {
                     System.out.println("NAO HA CAMINHO DISPONIVEL");
                 }
                 break;
             case "2":
             case "4":
+                Map map = new Map(arquivoEntrada);
+                int [] path = findPath(map, Integer.parseInt(criterio));
                 printSolution(map, path);
                 break;
             case "3":
