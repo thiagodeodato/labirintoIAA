@@ -1,3 +1,14 @@
+/**
+ * Introdução à Análise de Algoritmos
+ * 2º semestre de 2020 - Turmas 04 e 94
+ * Exercício Programa 2: Labirinto
+ * 
+ * Integrantes da dupla:
+ * Bruno Furquim de Campos Morone - 10403248
+ * Thiago de Oliveira Deodato - 10258938
+ */
+
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -467,13 +478,16 @@ public class EP {
                 }
                 break;
             case "2":
-            case "4":
                 Map map = new Map(arquivoEntrada);
-                int [] path = findPath(map, Integer.parseInt(criterio));
+                int [] path = findPath(map, 2);
                 printSolution(map, path);
                 break;
             case "3":
-                // Completar aqui
+                break;
+            case "4":
+                map = new Map(arquivoEntrada);
+                path = findPath(map, 4);
+                printSolution(map, path);
                 break;
         }
 

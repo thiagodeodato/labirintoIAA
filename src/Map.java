@@ -1,7 +1,18 @@
+/**
+ * Introdução à Análise de Algoritmos
+ * 2º semestre de 2020 - Turmas 04 e 94
+ * Exercício Programa 2: Labirinto
+ * 
+ * Integrantes da dupla:
+ * Bruno Furquim de Campos Morone - 10403248
+ * Thiago de Oliveira Deodato - 10258938
+ */
+
+
 import java.io.*;
 import java.util.*;
 
-class Map {
+public class Map {
 
     public static final char FREE = '.';
 
