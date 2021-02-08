@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class dev {
+public class EP {
 
     public static int linhas, colunas, numeroItens;
     public static ArrayList<ItemMapa> items = new ArrayList<ItemMapa>();
@@ -13,14 +13,10 @@ public class dev {
     public static Coordenada[][] mapaCaminho;
     public static Coordenada origem;
     public static Coordenada destino;
-    public static Coordenada atual;
-    public static ArrayList<Coordenada> historico = new ArrayList<Coordenada>();
-
-    public static double tempo = 0;
-    public static int peso = 0;
 
     public static final char LIVRE = '.';
 
+    // Imprime o mapa (com ".", "X" e "*")
     public static void imprimirMapa() {
         int x = 0;
         int y = 0;
@@ -38,6 +34,7 @@ public class dev {
         }
     }
 
+    // Retorna o tempo total levado para realizar o caminho
     public static double descobrirTempo(Coordenada[] caminho) {
         int peso = 0;
         double tempoTotal = 0;
@@ -51,6 +48,7 @@ public class dev {
         return tempoTotal;
     }
 
+    // Se houver um item na posicao passada como parametro, retorna o item. Senao, retorna null
     public static ItemMapa temItem(Coordenada coordenada) {
         for (int i = 0; i < items.size(); i++) {
             ItemMapa item = items.get(i);
@@ -61,62 +59,13 @@ public class dev {
         return null;
     }
 
+    // Retorna o tempo de um passo dentro do caminho (baseado no peso no momento do passo)
     public static double tempoPasso(int peso) {
         double base = 1 + ((double) peso / 10);
         return Math.pow(base, 2);
     }
 
-    public static Coordenada[] interpretaMapaCaminho(Coordenada[][] mapaCaminho) {
-        Coordenada d = destino;
-        int pesoTotal = 0;
-        int valorTotal = 0;
-        int contador = 0;
-        double tempo = 0;
-        while (!d.igual(origem)) {
-            contador++;
-            d = mapaCaminho[d.getY()][d.getX()];
-        }
-        Coordenada[] caminhoInvertido = new Coordenada[contador];
-        Coordenada[] caminhoCorreto = new Coordenada[contador];
-        caminhoInvertido[0] = destino;
-
-        ArrayList<ItemMapa> itensAchados = new ArrayList<ItemMapa>();
-
-        d = destino;
-        int i = 0;
-        while (!d.igual(origem)) {
-            d = mapaCaminho[d.getY()][d.getX()];
-            ItemMapa item = temItem(d);
-            if (item != null) {
-                itensAchados.add(item);
-            }
-            caminhoInvertido[i] = d;
-            caminhoCorreto[caminhoCorreto.length - 1 - i] = d;
-            i++;
-        }
-
-        tempo = descobrirTempo(caminhoCorreto);
-        System.out.println(caminhoInvertido.length + 1 + " " + tempo);
-
-        for (int x = 0; x < itensAchados.size(); x++) {
-            pesoTotal += itensAchados.get(x).peso;
-            valorTotal += itensAchados.get(x).valor;
-        }
-
-        i = 0;
-        while (i < caminhoCorreto.length) {
-            caminhoCorreto[i++].imprimirSaida();
-        }
-        destino.imprimirSaida();
-
-        System.out.println(itensAchados.size() + " " + valorTotal + " " + pesoTotal);
-
-        for (int x = 0; x < itensAchados.size(); x++) {
-            itensAchados.get(x).coordenada.imprimirSaida();
-        }
-        return caminhoInvertido;
-    }
-
+    // Imprime o mapa retornado pelos metodos dos caminhos
     public static void imprimirMapaCaminho(Coordenada[][] mapaCaminho) {
         int x = 0;
         int y = 0;
@@ -134,19 +83,7 @@ public class dev {
         }
     }
 
-    public static void imprimirHistorico() {
-        for (int i = 0; i < historico.size(); i++) {
-            Coordenada x = historico.get(i);
-            if (i == 0)
-                System.out.print("Inicial: ");
-            else if (i == historico.size() - 1)
-                System.out.print("Final: ");
-            x.imprimir();
-        }
-        System.out.print("Número de passos dados: ");
-        System.out.println(historico.size());
-    }
-
+    // Inicializa as variáveis necessárias a partir da entrada do programa
     public static void inicializarVariaveis(String entrada) {
         String[] comandos = entrada.split("\n");
         int i = 1;
@@ -157,11 +94,8 @@ public class dev {
         int coluna = Integer.parseInt(coordenadas.split(" ")[1].trim());
 
         mapa = new char[coluna][linha];
-        mapaCaminho = new Coordenada[coluna][linha];
 
         int itens = Integer.parseInt(comandos[linha + 1].trim());
-
-        // int contador = 0;
 
         int x = 0;
         int y = 0;
@@ -170,7 +104,6 @@ public class dev {
             y = 0;
             while (y < coluna) {
                 mapa[y][x] = caminho.trim().charAt(y);
-                mapaCaminho[y][x] = new Coordenada(-1, -1);
                 y++;
             }
             x++;
@@ -198,9 +131,25 @@ public class dev {
 
         origem = new Coordenada(origemX, origemY);
         destino = new Coordenada(destinoX, destinoY);
-        atual = origem;
     }
 
+    // Inicializa mapa auxiliar
+    public static Coordenada[][] inicializarMapaCaminho() {
+        Coordenada[][] mapa = new Coordenada[colunas][linhas];
+        int x = 0;
+        int y = 0;
+        while (x < linhas) {
+            y = 0;
+            while (y < colunas) {
+                mapa[y][x] = new Coordenada(-1, -1);
+                y++;
+            }
+            x++;
+        }
+        return mapa;
+    }
+
+    // Inicializa mapa auxiliar com coordenadas visitadas
     public static Boolean[][] inicializarMapaVisitados() {
         Boolean[][] mapa = new Boolean[colunas][linhas];
         int x = 0;
@@ -216,6 +165,70 @@ public class dev {
         return mapa;
     }
 
+    // Interpreta o retorno de "caminhoMaisCurto" para que a saída esteja da forma
+    // pedida
+    public static Coordenada[] interpretaMapaCaminho(Coordenada[][] mapaCaminho) {
+        Coordenada d = destino;
+        int pesoTotal = 0;
+        int valorTotal = 0;
+        int contador = 0;
+        double tempo = 0;
+
+        // Calcula número de passos do caminho encontrado
+        while (!d.igual(origem)) {
+            contador++;
+            d = mapaCaminho[d.getY()][d.getX()];
+        }
+
+        // Inicializa arranjos auxiliares
+        Coordenada[] caminhoInvertido = new Coordenada[contador];
+        Coordenada[] caminhoCorreto = new Coordenada[contador];
+        caminhoInvertido[0] = destino;
+
+        // Lista auxiliar de itens achados pelo caminho para poder calcular o peso total
+        // e tempo do caminho
+        ArrayList<ItemMapa> itensAchados = new ArrayList<ItemMapa>();
+
+        d = destino;
+        int i = 0;
+        while (!d.igual(origem)) {
+            d = mapaCaminho[d.getY()][d.getX()];
+            ItemMapa item = temItem(d);
+            if (item != null) {
+                itensAchados.add(item);
+            }
+            caminhoInvertido[i] = d;
+            caminhoCorreto[caminhoCorreto.length - 1 - i] = d;
+            i++;
+        }
+
+        tempo = descobrirTempo(caminhoCorreto);
+        System.out.println(caminhoCorreto.length + 1 + " " + tempo);
+
+        // Calcula peso e valor total do caminho baseado nos itens achados
+        for (int x = 0; x < itensAchados.size(); x++) {
+            pesoTotal += itensAchados.get(x).peso;
+            valorTotal += itensAchados.get(x).valor;
+        }
+
+        // Imprime saída da forma pedida
+        i = 0;
+        while (i < caminhoCorreto.length) {
+            caminhoCorreto[i++].imprimirSaida();
+        }
+        destino.imprimirSaida();
+
+        // Imprime o número de itens achados, o valor total e o peso total
+        System.out.println(itensAchados.size() + " " + valorTotal + " " + pesoTotal);
+
+        // Imprime as coordenadas do itens achados
+        for (int x = 0; x < itensAchados.size(); x++) {
+            itensAchados.get(x).coordenada.imprimirSaida();
+        }
+        return caminhoCorreto;
+    }
+
+    // Lê o arquivo de entrada e retorna o seu conteúdo em uma String concatenada
     public static String lerArquivo(String arquivoEntrada) {
         Path nomeArquivo = Path.of(arquivoEntrada);
         String entrada = "";
@@ -228,45 +241,31 @@ public class dev {
         return entrada;
     }
 
+    // Retorna verdadeiro caso a posicao do mapa esteja livre e falso caso
+    // contrario.
     public static boolean estaLivre(Coordenada destino) {
         return mapa[destino.getY()][destino.getX()] == '.';
     }
 
+    // Retorna verdadeiro caso seja posicao andar para a posicao desejada (passada
+    // como parametro) e falso caso contrário
     public static boolean possivelAndar(Coordenada destinoCaminho) {
+        // Está dentro dos limites do mapa
         boolean dentroDoMapa = destinoCaminho.getY() < colunas && destinoCaminho.getX() < linhas
                 && destinoCaminho.getX() >= 0 && destinoCaminho.getY() >= 0;
 
+        // Está livre (sem obstáculos e não foi visitado ainda)
         boolean livre = false;
         if (dentroDoMapa)
             livre = estaLivre(destinoCaminho);
-        return livre && !destinoCaminho.visitada;
+
+        return livre;
     }
 
-    public static void imprimirPosicaoMapa(Coordenada posicao) {
-        int x = 0;
-        int y = 0;
-        while (x < linhas) {
-            y = 0;
-            while (y < colunas) {
-                if (posicao.igual(new Coordenada(y, x))) {
-                    System.out.print('+');
-                } else {
-                    System.out.print('.');
-                }
-                y++;
-            }
-            System.out.println();
-            x++;
-        }
-    }
-
-    public static char conteudoPosicao(Coordenada posicao) {
-        return mapa[posicao.getY()][posicao.getX()];
-    }
-
-    public static void andar(Coordenada destino) {
-        mapa[destino.getY()][destino.getX()] = '*';
-    }
+    /*
+     * Abaixo seguem 4 métodos responsáveis por retornar as coordenadas à direita,
+     * esquerda, cima e baixo da coordenada recebida como parâmetro.
+     */
 
     public static Coordenada direita(Coordenada atual) {
         return new Coordenada(atual.getX(), atual.getY() + 1);
@@ -284,35 +283,19 @@ public class dev {
         return new Coordenada(atual.getX() - 1, atual.getY());
     }
 
-    public static void imprimirFila(Queue<Coordenada> fila) {
-        Queue<Coordenada> novaFila = new LinkedList<Coordenada>(fila);
-        while (!novaFila.isEmpty()) {
-            novaFila.poll().imprimirNaFila();
-            ;
-        }
-        System.out.println();
-    }
-
-    public static Coordenada[][] inicializarMapaCaminho() {
-        Coordenada[][] mapa = new Coordenada[colunas][linhas];
-        int x = 0;
-        int y = 0;
-        while (x < linhas) {
-            y = 0;
-            while (y < colunas) {
-                mapa[y][x] = new Coordenada(-1, -1);
-                y++;
-            }
-            x++;
-        }
-        return mapa;
-    }
-
+    // Esse método é responsável por retornar o caminho mais curto entre duas
+    // coordenadas (menor número de coordenadas visitadas dentro do mapa)
     public static Coordenada[][] caminhoMaisCurto(Coordenada origem, Coordenada destino) {
         Queue<Coordenada> fila = new LinkedList<Coordenada>();
         Coordenada current;
         Coordenada direita, esquerda, baixo, cima;
 
+        /*
+         * Utiliza-se duas matrizes auxiliares, uma contendo um mapa idêntico ao
+         * principal para saber quais posições já foram visitadas e outra para manter
+         * controle das posições visitadas (origem de cada mudança de coordenada fica
+         * salva, possibilitando a reconstrução do caminho posteriormente)
+         */
         Boolean[][] visitados = inicializarMapaVisitados();
         Coordenada[][] mapaCaminho = inicializarMapaCaminho();
 
@@ -342,43 +325,42 @@ public class dev {
                     mapaCaminho[vizinho.getY()][vizinho.getX()] = new Coordenada(current.getX(), current.getY());
                 }
             }
-            // if (destino.igual(current)) {
-            // mapa[current.getY()][current.getX()] = new Coordenada(anterior.getX(),
-            // anterior.getY());
-            // andar(anterior, current);
-            // return mapa;
-            // } else {
-            // mapa[current.getY()][current.getX()] = new Coordenada(anterior.getX(),
-            // anterior.getY());
-            // andar(anterior, current);
-            // if (possivelAndar(direita(current)))
-            // fila.add(direita(current));
-            // if (possivelAndar(esquerda(current)))
-            // fila.add(esquerda(current));
-            // if (possivelAndar(cima(current)))
-            // fila.add(cima(current));
-            // if (possivelAndar(baixo(current)))
-            // fila.add(baixo(current));
-            // }
-            // anterior = new Coordenada(current.getX(), current.getY());
         }
         return null;
     }
 
-    public static boolean chegou() {
-        return atual.igual(destino);
-    }
-
+    // Responsável por rodar o programa, aceita dois argumentos: arquivo de entrada
+    // e criteiro de busca
     public static void main(String[] args) {
+        if (args.length < 2) {
+            System.out.println("QUANTIDADE INSUFICIENTE DE ARGUMENTOS NA EXECUCAO");
+            return;
+        }
         String arquivoEntrada = args[0];
+        String criterio = args[1];
+
         String entrada = lerArquivo(arquivoEntrada);
         inicializarVariaveis(entrada);
 
-        Coordenada[][] mapa = caminhoMaisCurto(origem, destino);
-        if (mapa != null) {
-            Coordenada caminho[] = interpretaMapaCaminho(mapa);
-        } else {
-            System.out.println("NAO HA CAMINHO DISPONIVEL");
+        switch (criterio) {
+            case "1":
+                Coordenada[][] mapa = caminhoMaisCurto(origem, destino);
+                if (mapa != null) {
+                    Coordenada caminho[] = interpretaMapaCaminho(mapa);
+                } else {
+                    System.out.println("NAO HA CAMINHO DISPONIVEL");
+                }
+                break;
+            case "2":
+                // Completar aqui
+                break;
+            case "3":
+                // Completar aqui
+                break;
+            case "4":
+                // Completar aqui
+                break;    
         }
+
     }
 }

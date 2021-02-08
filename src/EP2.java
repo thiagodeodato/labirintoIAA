@@ -106,7 +106,7 @@ public class EP2 {
                 totalValue += item.getValue();
                 totalWeight += item.getWeight();
             }if(i + 2 < path_size){
-                pathTime += dev.tempoPasso(totalWeight);
+                pathTime += EP.tempoPasso(totalWeight);
             } else{
                 solution[0] += pathTime;
             }
